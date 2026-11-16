@@ -23,7 +23,7 @@ root hold the same memory.
 [MP4](docs/media/ledger-demo.mp4) · 2 min, recorded on the live mesh. The colour of
 each card is its node's fingerprint, so the same colour means the same records.
 1. Writes from three machines arrive everywhere.
-2. A node goes offline and catches up in 6 s.
+2. A node goes offline and catches up in about 6 s.
 3. Two agents write with keys of their own.
 4. One agent's key leaks and is revoked: its later writes lose their effect, and its
    earlier note comes back.
@@ -167,7 +167,7 @@ Not yet:
 **Agents playing a game through shared memory:** Claude Code (behind NAT) plays X,
 Codex (cloud) plays O, Antigravity (cloud) referees. The fourth pane is the board as
 the ledger sees it. [GIF](docs/media/agents-tictactoe.gif) ·
-[MP4](docs/media/agents-tictactoe.mp4), 1 min 50 s.
+[MP4](docs/media/agents-tictactoe.mp4), 2 min 17 s.
 
 ## Documentation
 
