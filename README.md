@@ -167,7 +167,7 @@ Not yet:
 **Agents playing a game through shared memory:** Claude Code (behind NAT) plays X,
 Codex (cloud) plays O, Antigravity (cloud) referees. The fourth pane is the board as
 the ledger sees it. [GIF](docs/media/agents-tictactoe.gif) ·
-[MP4](docs/media/agents-tictactoe.mp4), 1 min 50 s.
+[MP4](docs/media/agents-tictactoe.mp4), 2 min 17 s.
 
 ## Documentation
 
