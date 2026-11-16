@@ -1,0 +1,17 @@
+[package]
+name = "sameroot"
+description = "The Sameroot command-line tool."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+sameroot-core.workspace = true
+sameroot-rpc.workspace = true
+sameroot-seal.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,23 @@
+[package]
+name = "samerootd"
+description = "The Sameroot node: keystore, databases, iroh endpoint and relays, journal, local RPC."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+sameroot-core.workspace = true
+sameroot-store.workspace = true
+sameroot-sync.workspace = true
+sameroot-rpc.workspace = true
+iroh.workspace = true
+iroh-blobs.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+getrandom.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,13 @@
+# iroh-relay behind a reverse proxy that terminates TLS: plain HTTP inside.
+enable_relay = true
+http_bind_addr = "0.0.0.0:3340"
+enable_quic_addr_discovery = false
+enable_metrics = false
+
+# Only your nodes may use the relay: their endpoint ids (`sameroot status`).
+# Remove this table to serve anyone.
+[access]
+allowlist = [
+    # "<endpoint id of node A>",
+    # "<endpoint id of node B>",
+]

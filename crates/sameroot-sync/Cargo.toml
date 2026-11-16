@@ -1,0 +1,23 @@
+[package]
+name = "sameroot-sync"
+description = "The Sameroot replication protocol over an abstract bidirectional stream."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+sameroot-core.workspace = true
+sameroot-store.workspace = true
+blake3.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+getrandom.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true

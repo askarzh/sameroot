@@ -1,0 +1,18 @@
+[package]
+name = "sameroot-mcp"
+description = "The Sameroot agent application: an MCP server for AI agents over the node's local RPC."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+sameroot-core.workspace = true
+sameroot-rpc.workspace = true
+sameroot-seal.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

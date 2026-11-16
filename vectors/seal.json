@@ -1,0 +1,14 @@
+{
+  "db": "7272727272727272727272727272727272727272727272727272727272727272",
+  "description": "sameroot-seal known answers: the memory key is the 32-byte key below; the sealed value was made once with a random nonce and must keep opening.",
+  "hiddenPaths": {
+    "a": "~/c7qdc2pcc23zlfnneb2km6bvwm",
+    "notes/topic": "~/ryjfysial35jpkfa4grlbzus4u/lpzjg4vr75kikk55v5oag2kfpq",
+    "projects/apollo/plan": "~/bcoi4awynza7cg2o6foqwa7syq/cghw4yybxsghhn5bdkskb2vfa4/bzbkrypmbxyjigknlwvnn5awem"
+  },
+  "key": "7171717171717171717171717171717171717171717171717171717171717171",
+  "keyId": "8dc8bf9fe7c5bb86",
+  "path": "notes/topic",
+  "plaintext": "{\"$sameroot\":1,\"key\":\"notes/topic\",\"value\":\"remember this\"}",
+  "sealed": "535253318dc8bf9fe7c5bb8653b872c522ff5a5961edb5a925cbd95c9aee507b8f019f2add892d491e9b77d5873404d6ab25d4db5d3f74e3df0ded571500623e00502f1cf56bb1ddf82be113d3bb4fffbe9a54391d5d35e5f2b8b4104e7448a44e3b892a850702c451f98f728639dd"
+}

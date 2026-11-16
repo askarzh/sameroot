@@ -1,0 +1,20 @@
+# An iroh relay for Sameroot nodes, behind a reverse proxy that terminates TLS.
+# The binary is built on the host (use an image with the same glibc):
+#   cargo install iroh-relay --version 1.4.1 --locked --features server --root ~/.local/opt/iroh-relay
+# The proxy reaches it as http://sameroot-relay-relay-1:3340 over the shared `web`
+# network; no ports are published.
+name: sameroot-relay
+
+services:
+  relay:
+    image: debian:trixie-slim
+    restart: unless-stopped
+    command: ["/usr/local/bin/iroh-relay", "--config-path", "/etc/iroh-relay/relay.toml"]
+    volumes:
+      - ${HOME}/.local/opt/iroh-relay/bin/iroh-relay:/usr/local/bin/iroh-relay:ro
+      - ./relay.toml:/etc/iroh-relay/relay.toml:ro
+    networks: [web]
+
+networks:
+  web:
+    external: true

@@ -1,0 +1,70 @@
+name: Release
+
+# A tag v* builds the binaries for each platform and attaches them to a GitHub
+# release (a draft, published by hand after a look).
+on:
+    push:
+        tags: ["v*"]
+
+permissions:
+    contents: write
+
+env:
+    CARGO_TERM_COLOR: always
+
+jobs:
+    build:
+        name: ${{ matrix.target }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+                    - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu }
+                    - { os: macos-latest, target: aarch64-apple-darwin }
+        steps:
+            - uses: actions/checkout@v4
+
+            # rustup is preinstalled on the runners and picks up rust-toolchain.toml.
+            - name: Toolchain
+              run: rustup show active-toolchain
+
+            - uses: Swatinem/rust-cache@v2
+              with:
+                  key: ${{ matrix.target }}
+
+            - name: Build
+              run: cargo build --release --locked -p samerootd -p sameroot -p sameroot-mcp
+
+            - name: Package
+              shell: bash
+              run: |
+                  name="sameroot-${GITHUB_REF_NAME}-${{ matrix.target }}"
+                  mkdir "$name"
+                  cp target/release/sameroot target/release/samerootd target/release/sameroot-mcp "$name/"
+                  cp README.md LICENSE SECURITY.md "$name/"
+                  tar -czf "$name.tar.gz" "$name"
+                  shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256"
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ matrix.target }}
+                  path: sameroot-*.tar.gz*
+
+    release:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/download-artifact@v4
+              with:
+                  merge-multiple: true
+
+            - name: Draft release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release create "$GITHUB_REF_NAME" sameroot-*.tar.gz* \
+                      --repo "$GITHUB_REPOSITORY" --draft --prerelease \
+                      --title "Sameroot $GITHUB_REF_NAME (experimental)" \
+                      --notes "Experimental prototype: the format may still break. See README and docs/threat-model.md."
