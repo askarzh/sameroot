@@ -26,6 +26,8 @@ The design decisions are in [docs/design](docs/design).
 - Do not write comments in code.
 - Give each variable, function, type, and module a name that shows its purpose clearly.
 - If the code is not clear without a comment, change the names or the structure.
+- Do not remove the comments that the code has now in one large change. Remove them only
+  in the part of the code that you change.
 - Documentation comments (`///` and `//!`) on public items stay. The build fails without
   them.
 
