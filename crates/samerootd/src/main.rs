@@ -155,6 +155,16 @@ fn load_or_create_key(path: &FsPath) -> std::io::Result<[u8; 32]> {
     Ok(seed)
 }
 
+/// Replaces the key at `path` with a new one, created as [`load_or_create_key`] does.
+fn replace_key(path: &FsPath) -> std::io::Result<[u8; 32]> {
+    match std::fs::remove_file(path) {
+        Ok(()) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e),
+    }
+    load_or_create_key(path)
+}
+
 /// A line-oriented `key value` file (peers, write certificates).
 fn read_pairs(path: &FsPath) -> Vec<(String, String)> {
     std::fs::read_to_string(path)
@@ -782,6 +792,11 @@ impl Node {
     /// certificate of its own (design 0004 §3: one key per agent, so one agent can
     /// be revoked alone). The agent's certificate is issued by the device, within the
     /// device's own area, for 30 days, and renewed a week before it ends.
+    ///
+    /// An agent key holds at most one certificate in a database, so a void of that
+    /// certificate covers the key. A new certificate comes with a new key when the
+    /// old key has a certificate there that is still valid or is voided. A voided
+    /// certificate is not used again.
     fn writer(&self, db: &Digest, agent: Option<&str>) -> Result<Writer, String> {
         let (subspace, device_cert) = self.write_identity(db)?;
         if let Some(c) = &device_cert
@@ -810,10 +825,12 @@ impl Node {
         }
         let dir = self.home.join("agents");
         std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-        let key = SecretKey::from_seed(
-            load_or_create_key(&dir.join(format!("{name}.key"))).map_err(|e| e.to_string())?,
-        );
+        let key_path = dir.join(format!("{name}.key"));
+        let mut key =
+            SecretKey::from_seed(load_or_create_key(&key_path).map_err(|e| e.to_string())?);
         let now = now_ms();
+        let void_targets = self.store().void_targets(db).map_err(|e| e.to_string())?;
+        let is_voided = |c: &SignedCert| void_targets.contains(&VoidTarget::Cert(c.id()));
         let slot = format!("{}/{name}", db.to_hex());
         let parent = device_cert.as_ref().map(|c| c.id());
         let (area, not_after) = match &device_cert {
@@ -836,17 +853,29 @@ impl Node {
             .and_then(|(_, id)| Digest::from_hex(&id))
             .and_then(|id| self.store().cert(&id).ok().flatten())
             .filter(|c| {
+                let lasts_past_renewal = c.cert.not_after > now.saturating_add(AGENT_RENEW);
+                let renewal_cannot_extend_it = c.cert.not_after >= not_after;
                 c.cert.subject == key.public()
                     && c.cert.parent == parent
                     && c.cert.area == area
-                    // Renewed only when a new one would last longer: under a device
-                    // certificate that ends sooner there is nothing to gain.
-                    && (c.cert.not_after > now.saturating_add(AGENT_RENEW)
-                        || c.cert.not_after >= not_after)
+                    && (lasts_past_renewal || renewal_cannot_extend_it)
+                    && !is_voided(c)
             });
         let cert = match current {
             Some(c) => c,
             None => {
+                let key_holds_a_certificate = self
+                    .store()
+                    .certs(db)
+                    .map_err(|e| e.to_string())?
+                    .iter()
+                    .any(|c| {
+                        c.cert.subject == key.public() && (c.cert.not_after > now || is_voided(c))
+                    });
+                if key_holds_a_certificate {
+                    key = SecretKey::from_seed(replace_key(&key_path).map_err(|e| e.to_string())?);
+                    log(format!("agent {name}: new key"));
+                }
                 let c = Cert {
                     issuer: self.device.public(),
                     subject: key.public(),
