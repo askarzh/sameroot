@@ -387,7 +387,11 @@ fn one_agent_is_revoked_without_the_others() {
     wait_for(
         "B has every note",
         30,
-        || b.get(&me, "notes/late").is_some() && b.get(&me, "notes/codex").is_some(),
+        || {
+            ["notes/early", "notes/codex", "notes/again", "notes/late"]
+                .iter()
+                .all(|path| b.get(&me, path).is_some())
+        },
         &[&a, &b],
     );
 
