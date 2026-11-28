@@ -133,6 +133,12 @@ way.
 A device can void the certificates it issued, such as its agents'. The owner can void
 any certificate in the database.
 
+An agent's key holds one certificate in a database. When the node renews the
+certificate, or after a void of it, the node gives the agent a new key and a new
+certificate at its next write. The voided key is not certified again. If you do not
+know when an agent's key leaked, void each valid certificate of that agent:
+`sameroot certs` lists them by name.
+
 A void stops a key's writes from counting. It doesn't take back what the key's holder
 could read: for that, the data needs a new memory key.
 

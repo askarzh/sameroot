@@ -427,4 +427,22 @@ fn one_agent_is_revoked_without_the_others() {
     // The other agent still writes.
     ok(a.put_as("codex", "notes/after", b"still here"));
     assert_eq!(a.get(&me, "notes/after").unwrap(), b"still here");
+
+    ok(a.put_as("claude", "notes/after-void", b"a new key"));
+    assert_eq!(
+        a.get(&me, "notes/after-void").as_deref(),
+        Some(&b"a new key"[..]),
+        "a write of the revoked agent counts again"
+    );
+    let claude_keys: std::collections::HashSet<String> = a
+        .certs()
+        .iter()
+        .filter(|c| c.text("name") == Some("agent claude"))
+        .filter_map(|c| c.text("subject").map(str::to_owned))
+        .collect();
+    assert_eq!(
+        claude_keys.len(),
+        2,
+        "the new certificate of the agent is for a new key"
+    );
 }

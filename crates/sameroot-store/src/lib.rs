@@ -184,6 +184,8 @@ struct CachedState {
     state: State,
     /// The values of the puts that count (see [`Store::live_values`]).
     live: Vec<(Digest, u64)>,
+    /// What the voids target (see [`Store::void_targets`]).
+    void_targets: Vec<VoidTarget>,
 }
 
 /// The embedded store.
@@ -686,14 +688,10 @@ impl Store {
         Ok(out)
     }
 
-    /// What the voids of a database target (certificates and keys).
+    /// What the voids of a database target (certificates and keys), cached with the
+    /// state.
     pub fn void_targets(&self, db: &Digest) -> Result<Vec<VoidTarget>> {
-        Ok(self
-            .ledger(db)?
-            .voids
-            .into_iter()
-            .map(|v| v.target)
-            .collect())
+        self.cached(db, sameroot_core::now_ms(), |c| c.void_targets.clone())
     }
 
     /// When a database was retired, if it was.
@@ -1173,12 +1171,14 @@ impl Store {
             .map(|e| (e.header.value_hash, e.header.value_size))
             .filter(|v| seen.insert(*v))
             .collect();
+        let void_targets = voids.iter().map(|v| v.target).collect();
         let c = CachedState {
             generation,
             as_of,
             valid_until,
             state,
             live,
+            void_targets,
         };
         let out = f(&c);
         self.states.lock().expect("state cache").insert(*db, c);
