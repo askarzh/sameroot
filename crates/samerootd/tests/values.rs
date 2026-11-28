@@ -301,6 +301,27 @@ fn a_missing_write_certificate_is_an_error() {
     assert!(r.text("error").unwrap().contains("cert add"));
 }
 
+/// A certificate that its issuer did not sign is not installed, so a succession never
+/// offers it to the owner to sign again.
+#[test]
+fn a_certificate_with_a_wrong_signature_is_not_installed() {
+    let owner = SecretKey::from_seed([0x64; 32]);
+    let mut a = Daemon::new();
+    a.start();
+    let g = database(&owner, 1 << 20);
+    let mut forged = delegate(&owner, g.id(), a.device());
+    forged.cert.subject = SecretKey::from_seed([0x65; 32]).public();
+    let mut m = request("cert.add");
+    m.insert("cert", Value::Bytes(forged.encode()));
+    let r = a.try_call(m).unwrap();
+    assert_eq!(r.flag("ok"), Some(false));
+    assert!(
+        r.text("error")
+            .unwrap()
+            .contains("not signed by its issuer")
+    );
+}
+
 /// `list` comes in pages (`offset`, `limit`, `next`), so a large database never
 /// needs one response over the RPC frame limit (review finding D6).
 #[test]

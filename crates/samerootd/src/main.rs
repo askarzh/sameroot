@@ -1580,6 +1580,10 @@ impl Node {
             "cert.add" => {
                 let cert = SignedCert::decode(req.bytes("cert").ok_or("cert missing")?)
                     .map_err(|e| e.to_string())?;
+                cert.cert
+                    .issuer
+                    .verify(&cert.cert.id(), &cert.sig)
+                    .map_err(|_| "the certificate is not signed by its issuer")?;
                 let mine = self.install_cert(&cert)?;
                 out.insert("forThisNode", Value::Bool(mine))
                     .insert("db", Value::Text(cert.cert.db.to_hex()));
@@ -1913,6 +1917,7 @@ impl Node {
                     .filter(|c| {
                         seen.insert(c.id())
                             && c.cert.issuer == g.genesis.owner
+                            && g.genesis.owner.verify(&c.cert.id(), &c.sig).is_ok()
                             && c.cert.parent.is_none()
                             && c.cert.not_after > now
                             && !voided.iter().any(|t| match t {

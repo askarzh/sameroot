@@ -77,7 +77,8 @@ pub enum Error {
 /// - every carried put is signed anew by the owner in its own subspace, at `now`
 ///   (the floor rule: nothing older than the child), keeping its expiry; puts
 ///   already expired at `now` are left out;
-/// - every device certificate given is issued anew in the child with the same
+/// - every device certificate given must be the owner's direct grant in the parent,
+///   with a valid owner signature; it is issued anew in the child with the same
 ///   subject, area, name and end, and published under [`GRANTS`];
 /// - the forward names the child, its owner and the cut.
 pub fn rewrite(
@@ -156,7 +157,8 @@ pub fn rewrite_renewing(
     let mut values = Vec::new();
     for d in devices {
         let c = &d.cert;
-        if c.db != parent_id || c.issuer != p.owner || c.parent.is_some() {
+        let signed_by_owner = p.owner.verify(&c.id(), &d.sig).is_ok();
+        if c.db != parent_id || c.issuer != p.owner || c.parent.is_some() || !signed_by_owner {
             return Err(Error::NotAGrant(d.id().to_hex()));
         }
         let cert = Cert {
@@ -370,5 +372,24 @@ mod tests {
             rewrite(&committed, &owner, &cut, &[], &[], None, 2_000).unwrap_err(),
             Error::NextOwner
         );
+    }
+
+    #[test]
+    fn a_grant_without_the_owners_signature_is_refused() {
+        let owner = SecretKey::from_seed([1; 32]);
+        let device = SecretKey::from_seed([2; 32]);
+        let intruder = SecretKey::from_seed([3; 32]);
+        let p = parent(&owner);
+        let cut = Cut {
+            root: Digest([9; 32]),
+            count: 7,
+            as_of: 5_000,
+        };
+        let mut forged = device_cert(&owner, p.id(), &device);
+        forged.cert.subject = intruder.public();
+        assert!(matches!(
+            rewrite(&p, &owner, &cut, &[], &[forged], None, 6_000),
+            Err(Error::NotAGrant(_))
+        ));
     }
 }
