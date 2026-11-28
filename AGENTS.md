@@ -8,6 +8,7 @@ The design decisions are in [docs/design](docs/design).
 
 - Write all text in English. This includes code, documents, commit messages, pull
   requests, and your answers.
+- Write a text in Russian only when the maintainer gives an explicit order for that text.
 - Obey ASD-STE100 Simplified Technical English in instructions and in your answers.
 - These are the primary rules of ASD-STE100:
   - Write short sentences. Use a maximum of 20 words in an instruction and 25 words in a
@@ -26,8 +27,11 @@ The design decisions are in [docs/design](docs/design).
 - Do not write comments in code.
 - Give each variable, function, type, and module a name that shows its purpose clearly.
 - If the code is not clear without a comment, change the names or the structure.
-- Documentation comments (`///` and `//!`) on public items stay. The build fails without
-  them.
+- Do not remove the comments that the code has now in one large change. Remove them only
+  in the part of the code that you change.
+- Documentation comments (`///` and `//!`) are not part of this rule. They are the
+  documentation and the contract of the library. Keep them, and keep them correct when the
+  code changes.
 
 ## Contents of this repository
 
